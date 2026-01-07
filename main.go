@@ -4,7 +4,8 @@ import "fmt" //fmt=format output 라이브러리
 
 func main() {
 	fmt.Println("Hello World")
-	FizzBuzz(100)
+	FizzBuzz(10)
+	n_BottlesOfBeer(5)
 }
 
 func FizzBuzz(n int) {
@@ -18,6 +19,26 @@ func FizzBuzz(n int) {
 			fmt.Println("Buzz") //5의 배수
 		default:
 			fmt.Println(i) //그 외 숫자
+		}
+	}
+}
+
+func n_BottlesOfBeer(n int) {
+	for i := n; i >= 0; i-- {
+		switch {
+		case i > 1:
+			fmt.Printf("%d bottles of beer on the wall, %d bottles of beer.\n", i, i)
+			s := "bottles"
+			if i-1 == 1 {
+				s = "bottle"
+			}
+			fmt.Printf("Take one down and pass it around, %d %s of beer on the wall.\n\n", i-1, s)
+		case i == 1:
+			fmt.Printf("1 bottle of beer on the wall, 1 bottle of beer.\n")
+			fmt.Printf("Take one down and pass it around, no more bottles of beer on the wall.\n\n")
+		default:
+			fmt.Printf("No more bottles of beer on the wall, no more bottles of beer.\n")
+			fmt.Printf("Go to the store and buy some more, %d bottles of beer on the wall.\n", n)
 		}
 	}
 }
