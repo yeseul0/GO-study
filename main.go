@@ -4,12 +4,15 @@ import "fmt" //fmt=format output 라이브러리
 
 func main() {
 	fmt.Println("Hello World")
-	FizzBuzz(10)
-	n_BottlesOfBeer(5)
+	// FizzBuzz(10)
+	// n_BottlesOfBeer(5)
+
+	pointerEx()
+	structPointerEx()
 }
 
 func FizzBuzz(n int) {
-	for i := 1; i <= n; i++ {
+	for i := 1; i <= n; i++ { // :=는 var과 타입 압축
 		switch {
 		case i%3 == 0 && i%5 == 0:
 			fmt.Println("FizzBuzz") //3,5 공배수
