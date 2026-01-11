@@ -32,7 +32,7 @@ func structPointerEx() {
 	fmt.Println("rect3 area:", rectangleArea(rect3))
 	fmt.Println("rect3 area(method):", rect3.area()) //구조체 메소드
 
-	var s = Student
+	var s = new(Student)
 	s.p.greeting()
 }
 

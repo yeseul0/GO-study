@@ -9,6 +9,7 @@ func main() {
 
 	pointerEx()
 	structPointerEx()
+	interfaceEx()
 }
 
 func FizzBuzz(n int) {
