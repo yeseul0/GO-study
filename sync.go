@@ -5,6 +5,7 @@ import (
 	"math/rand"
 	"runtime"
 	"sync"
+	"sync/atomic"
 	"time"
 )
 
@@ -202,7 +203,7 @@ type Data struct {
 }
 
 // Sync.pool
-func main() {
+func ex6() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	pool := sync.Pool{
@@ -269,3 +270,50 @@ func main() {
 	-> 고루틴 20개 썼는데, 실체 객체는 9개 생성,  11번은 재활용!!
 	-> GC 부담이 줄어든다!!
 */
+
+// Sync.WaitGroup대기그룹
+func ex7() {
+	runtime.GOMAXPROCS(runtime.NumCPU()) //모든 CPU 사용
+
+	wg := new(sync.WaitGroup) //대기 그룹
+
+	for i := 0; i < 10; i++ {
+		wg.Add(1) //반복마다 wg.Add함수로 1씩 추가
+		go func(n int) {
+			fmt.Println(n)
+			wg.Done() //고루틴 끝남을 알림! -> wg에서 추적하고있는 개수랑, Done호출 수가 안맞으면 패닉.
+		}(i)
+	}
+
+	wg.Wait() //모든 고루틴 끝날 때까지 기다림
+	fmt.Println("the end")
+}
+
+// atomic
+func ex8() {
+	runtime.GOMAXPROCS(runtime.NumCPU())
+
+	var data int32 = 0
+	wg := new(sync.WaitGroup)
+
+	for i := 0; i < 2000; i++ {
+		wg.Add(1)
+		go func() {
+			//data += 1  -> 이렇게 하면 같은 data에 여러 고루틴이 접근하면서 꼬인다..
+			atomic.AddInt32(&data, 1)
+			wg.Done()
+		}()
+	}
+
+	for i := 0; i < 1000; i++ {
+		wg.Add(1)
+		go func() {
+			// data -= 1
+			atomic.AddInt32(&data, -1)
+			wg.Done()
+		}()
+	}
+
+	wg.Wait()
+	fmt.Println(data)
+}
