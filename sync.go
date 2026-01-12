@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math/rand"
 	"runtime"
 	"sync"
 	"time"
@@ -143,7 +144,7 @@ func ex3() {
 */
 
 // sync.Cond & Broadcast
-func main() {
+func ex4() {
 	runtime.GOMAXPROCS(runtime.NumCPU()) // 모든 CPU 사용
 
 	var mutex = new(sync.Mutex)    // 뮤텍스 생성
@@ -174,3 +175,97 @@ func main() {
 
 	fmt.Scanln()
 }
+
+func hello2() {
+	fmt.Println("Hello, world!")
+}
+
+// once
+func ex5() {
+	runtime.GOMAXPROCS(runtime.NumCPU())
+
+	once := new(sync.Once)
+
+	for i := 0; i < 3; i++ {
+		go func(n int) {
+			fmt.Println("Goroutine:", n)
+			once.Do(hello2) //한 번만 실행됨
+		}(i)
+	}
+
+	fmt.Scanln()
+}
+
+type Data struct {
+	tag    string
+	buffer []int
+}
+
+// Sync.pool
+func main() {
+	runtime.GOMAXPROCS(runtime.NumCPU())
+
+	pool := sync.Pool{
+		New: func() interface{} { //sync.Pool의 Get 함수 호출 시 실행될 함수는 New 필드에! (단 pool에 객체가 없을때 New호출, 이미 있다면 객체 리턴)
+			data := new(Data)             //새 메모리 할당
+			data.tag = "new"              //태그 값
+			data.buffer = make([]int, 10) //슬라이스 공간 할당
+			return data                   //메모리 리턴
+		},
+	}
+
+	for i := 0; i < 10; i++ {
+		go func() {
+			data := pool.Get().(*Data) //pool에서 *Data 타입으로 데이터 가져옴
+			for index := range data.buffer {
+				data.buffer[index] = rand.Intn(100)
+			}
+			fmt.Println(data)
+			data.tag = "used"
+			pool.Put(data) //Pool에 객체 보관
+		}()
+	}
+
+	for i := 0; i < 10; i++ {
+		go func() {
+			data := pool.Get().(*Data)
+			n := 0
+			for index := range data.buffer {
+				data.buffer[index] = n //짝수 저장
+				n += 2
+			}
+			fmt.Println(data)
+			data.tag = "used"
+			pool.Put(data)
+		}()
+	}
+
+	fmt.Scanln()
+}
+
+/*
+	출력
+	&{new [0 2 4 6 8 10 12 14 16 18]}
+	&{used [64 26 73 65 42 34 50 98 62 33]}
+	&{new [3 35 64 12 54 19 76 12 64 99]}
+	&{used [78 99 37 80 46 6 2 1 94 84]}
+	&{new [0 2 4 6 8 10 12 14 16 18]}
+	&{new [0 2 4 6 8 10 12 14 16 18]}
+	&{new [0 2 4 6 8 10 12 14 16 18]}
+	&{new [0 2 4 6 8 10 12 14 16 18]}
+	&{used [0 2 4 6 8 10 12 14 16 18]}
+	&{used [0 2 4 6 8 10 12 14 16 18]}
+	&{new [0 2 4 6 8 10 12 14 16 18]}
+	&{used [33 21 17 43 89 31 4 35 43 23]}
+	&{used [0 2 4 6 8 10 12 14 16 18]}
+	&{used [0 2 4 6 8 10 12 14 16 18]}
+	&{used [79 51 7 33 50 22 16 82 11 39]}
+	&{used [31 56 89 35 17 3 80 89 99 89]}
+	&{used [72 67 98 47 9 31 83 37 36 61]}
+	&{new [86 20 89 32 2 88 50 31 0 49]}
+	&{used [53 61 19 95 4 14 3 61 68 85]}
+	&{new [18 70 94 74 32 25 89 49 48 56]}
+
+	-> 고루틴 20개 썼는데, 실체 객체는 9개 생성,  11번은 재활용!!
+	-> GC 부담이 줄어든다!!
+*/
